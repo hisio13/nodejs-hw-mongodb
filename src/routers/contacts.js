@@ -14,7 +14,7 @@ import {
     contactSchema,
     contactUpdateSchema,
 } from '../validation/contacts.js';
-import { upload } from '../middlewares/upload.js';
+import { upload } from '../middlewares/multer.js';
 
 const router = express.Router();
 
