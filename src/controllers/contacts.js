@@ -65,26 +65,31 @@ export const getContactByIdController = async (req, res) => {
     });
 };
 
-export const createContactController = async (req, res) => {
-
+export const createContactController = async (req, res, next) => {
+  try {
     const userId = req.user?._id;
     const photo = req.file?.path || '';
     const newContact = await createContactService({ ...req.body, userId, photo });
 
     res.status(201).json({
-        status: 201,
-        message: 'Successfully created a contact!',
-        data: {
-            id: newContact._id,
-            name: newContact.name,
-            phoneNumber: newContact.phoneNumber,
-            email: newContact.email,
-            isFavourite: newContact.isFavourite,
-            contactType: newContact.contactType,
-            photo: newContact.photo
-        }
+      status: 201,
+      message: 'Successfully created a contact!',
+      data: {
+        id: newContact._id,
+        name: newContact.name,
+        phoneNumber: newContact.phoneNumber,
+        email: newContact.email,
+        isFavourite: newContact.isFavourite,
+        contactType: newContact.contactType,
+        photo: newContact.photo
+      }
     });
+  } catch (error) {
+    console.error('❌ Error in createContactController:', error);
+    next(error);
+  }
 };
+
 
 export const updateContactController = async (req, res) => {
     const { contactId } = req.params;
