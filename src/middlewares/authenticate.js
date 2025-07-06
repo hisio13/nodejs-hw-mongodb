@@ -1,46 +1,31 @@
-import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import createError from 'http-errors';
+import { User } from '../models/userModel.js';
+import { Session } from '../models/sessionModel.js';
 
-import { SessionsCollection } from '../db/models/session.js';
-import { UsersCollection } from '../db/models/user.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const authenticate = async (req, res, next) => {
-  const authHeader = req.get('Authorization');
+    try {
+        const authHeader = req.headers.authorization || '';
+        const token = authHeader.replace('Bearer ', '').trim();
+        if (!token) throw createError(401, 'No token provided');
 
-  if (!authHeader) {
-    next(createHttpError(401, 'Please provide Authorization header'));
-    return;
-  }
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(payload.userId);
+        if (!user) throw createError(401, 'User not found');
 
-  const bearer = authHeader.split(' ')[0];
-  const token = authHeader.split(' ')[1];
+        const session = await Session.findOne({ accessToken: token });
+        if (!session) throw createError(401, 'Session expired or invalid');
 
-  if (bearer !== 'Bearer' || !token) {
-    next(createHttpError(401, 'Auth header should be of type Bearer'));
-    return;
-  }
-
-  const session = await SessionsCollection.findOne({ accessToken: token });
-
-  if (!session) {
-    next(createHttpError(401, 'Session not found'));
-    return;
-  }
-
-  const isAccessTokenExpired =
-    new Date() > new Date(session.accessTokenValidUntil);
-
-  if (isAccessTokenExpired) {
-    next(createHttpError(401, 'Access token expired'));
-  }
-
-  const user = await UsersCollection.findById(session.userId);
-
-  if (!user) {
-    next(createHttpError(401));
-    return;
-  }
-
-  req.user = user;
-
-  next();
+        req.user = user;
+        next();
+    } catch (err) {
+        if (err.name === 'TokenExpiredError') {
+            next(createError(401, 'Access token expired'));
+        } else {
+            next(createError(401, 'Invalid or missing token'));
+        }
+    }
 };
