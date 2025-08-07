@@ -35,7 +35,7 @@ parameters:
       example: 'asc'
     description: 'Sort order'
   - in: query
-    name: isFaourite
+    name: isFavorite
     schema:
       type: boolean
       example: true

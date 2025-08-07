@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "https://nodejs-hw-mongodb-ihgx.onrender.com"
+      "url": "https://nodejs-hw-mongodb-35w6.onrender.com"
     }
   ],
   "tags": [
@@ -580,7 +580,7 @@
           },
           {
             "in": "query",
-            "name": "isFaourite",
+            "name": "isFavorite",
             "schema": {
               "type": "boolean",
               "example": true
